@@ -6,6 +6,24 @@ def parse_file(input_file, output_csv):
     # Compile a regex pattern to match date lines (YYYY-MM-DD)
     date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
+    # Compile a regex pattern to match footer lines like '3 of 3824'
+    footer_pattern = re.compile(r'^\d+\s+of\s+\d+$')
+
+    # Define a set of header lines to ignore
+    ignore_lines = {
+        '^LRecord',
+        'creation',
+        'date',
+        'Last',
+        'Update',
+        'BIC',
+        'Brch',
+        'Code',
+        'Full legal name',
+        'Registered address',
+        'Operational address'
+    }
+
     # Check if the CSV file exists to determine if we need to write the header
     file_exists = os.path.isfile(output_csv)
 
@@ -19,6 +37,17 @@ def parse_file(input_file, output_csv):
         if not file_exists or os.path.getsize(output_csv) == 0:
             writer.writerow(['BIC8', 'Branch Code', 'Bank Name', 'Address Block 1', 'Address Block 2', 'Country', 'Institution Type'])
 
+        # Filter out header and footer lines
+        filtered_lines = []
+        for line in lines:
+            stripped_line = line.strip()
+            if stripped_line in ignore_lines:
+                continue
+            if footer_pattern.match(stripped_line):
+                continue
+            filtered_lines.append(line)
+
+        lines = filtered_lines
         idx = 0
         total_lines = len(lines)
 
