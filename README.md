@@ -1,0 +1,1 @@
+pdftotext ISOBIC.pdf
